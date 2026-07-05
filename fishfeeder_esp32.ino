@@ -3,6 +3,7 @@
 #include <ArduinoJson.h>
 #include <Adafruit_Sensor.h>
 #include <DHT.h>
+#include <ESP32Servo.h>
 #include <time.h>
 
 // ================= KONFIGURASI WiFi =================
@@ -22,9 +23,15 @@ String topic_sensor = "";
 String topic_feeding = "";
 
 // ================= PIN KONFIGURASI =================
-const int PIN_MOTOR = 2;      // Pin relay/servo motor
+const int PIN_SERVO = 2;      // GPIO signal servo. Sesuaikan jika kabel signal di pin lain.
 const int PIN_DHT = 4;        // Pin sensor DHT22
 const int PIN_BATTERY = 35;   // Pin ADC untuk battery
+
+// ================= KONFIGURASI SERVO =================
+const int SERVO_IDLE_ANGLE = 0;    // Posisi tertutup/diam
+const int SERVO_FEED_ANGLE = 90;   // Posisi buka pakan
+const int SERVO_MIN_US = 500;
+const int SERVO_MAX_US = 2400;
 
 // DHT Sensor Setup
 #define DHTTYPE DHT22
@@ -33,6 +40,7 @@ DHT dht(PIN_DHT, DHTTYPE);
 // ================= GLOBAL VARIABLES =================
 WiFiClient espClient;
 PubSubClient client(espClient);
+Servo feederServo;
 unsigned long lastSensorUpdate = 0;
 unsigned long lastStatusUpdate = 0;
 const unsigned long sensorInterval = 10000;  // 10 detik
@@ -40,6 +48,7 @@ const unsigned long statusInterval = 5000;   // 5 detik
 bool motorRunning = false;
 unsigned long motorStartTime = 0;
 int motorDuration = 0;
+String currentFeedType = "manual";
 
 // ================= SETUP =================
 void setup() {
@@ -60,9 +69,10 @@ void setup() {
   Serial.print("Status Topic: ");
   Serial.println(topic_status);
   
-  // Setup pins
-  pinMode(PIN_MOTOR, OUTPUT);
-  digitalWrite(PIN_MOTOR, LOW);
+  // Setup servo
+  feederServo.setPeriodHertz(50);
+  feederServo.attach(PIN_SERVO, SERVO_MIN_US, SERVO_MAX_US);
+  feederServo.write(SERVO_IDLE_ANGLE);
   
   // Setup DHT sensor
   dht.begin();
@@ -164,8 +174,8 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
         Serial.print(duration);
         Serial.println(" detik");
         
+        currentFeedType = "manual";
         feedMotor(duration);
-        publishFeedingRecord(duration, "manual");
       }
       else if (action == "stop") {
         Serial.println("Perintah Stop diterima");
@@ -173,6 +183,7 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
       }
       else if (action == "test") {
         Serial.println("Perintah Test diterima");
+        currentFeedType = "manual";
         feedMotor(2);
       }
     }
@@ -188,8 +199,10 @@ void feedMotor(int durationSeconds) {
     motorRunning = true;
     motorStartTime = millis();
     motorDuration = durationSeconds;
-    digitalWrite(PIN_MOTOR, HIGH);
-    Serial.println("Motor HIDUP");
+    feederServo.write(SERVO_FEED_ANGLE);
+    Serial.print("Servo buka pakan ke ");
+    Serial.print(SERVO_FEED_ANGLE);
+    Serial.println(" derajat");
     publishStatus("running");
   }
 }
@@ -197,9 +210,12 @@ void feedMotor(int durationSeconds) {
 void stopMotor() {
   if (motorRunning) {
     motorRunning = false;
-    digitalWrite(PIN_MOTOR, LOW);
-    Serial.println("Motor MATI");
+    feederServo.write(SERVO_IDLE_ANGLE);
+    Serial.print("Servo kembali ke ");
+    Serial.print(SERVO_IDLE_ANGLE);
+    Serial.println(" derajat");
     publishStatus("idle");
+    publishFeedingRecord(motorDuration, currentFeedType);
   }
 }
 

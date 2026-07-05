@@ -19,7 +19,7 @@ cp .env.example .env.local
 ```env
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your-anon-key
-VITE_DEVICE_ID=1
+VITE_DEVICE_ID=00:00:00:00:00:00
 ```
 
 MQTT broker (HiveMQ) sudah terisi default dan tidak perlu perubahan untuk public broker.
@@ -47,7 +47,7 @@ Update `fishfeeder_esp32.ino` untuk publish ke MQTT topics:
 // Contoh publish sensor data setiap 5 detik:
 void publishSensorData() {
   DynamicJsonDocument doc(512);
-  doc["device_id"] = 1;
+  doc["device_id"] = device_id;
   doc["temperature"] = temperature;
   doc["humidity"] = humidity;
   doc["water_level"] = waterLevel;
@@ -55,7 +55,7 @@ void publishSensorData() {
   
   String json;
   serializeJson(doc, json);
-  client.publish("fishfeeder/device/1/sensors", json.c_str());
+  client.publish(("fishfeeder/device/" + device_id + "/sensors").c_str(), json.c_str());
 }
 
 // Subscribe ke feed commands:
@@ -63,7 +63,7 @@ void callback(char* topic, byte* payload, unsigned int length) {
   DynamicJsonDocument doc(256);
   deserializeJson(doc, payload, length);
   
-  if (doc["feed"] == true) {
+  if (doc["action"] == "feed") {
     int duration = doc["duration"];
     activateMotor(duration);
   }
@@ -77,16 +77,16 @@ Jika belum punya ESP32 yang siap, test dengan MQTT client simulator:
 ### Option 1: MQTT Explorer
 1. Download MQTT Explorer
 2. Connect ke `broker.hivemq.com`
-3. Publish test message ke `fishfeeder/device/1/sensors`
+3. Publish test message ke `fishfeeder/device/00:00:00:00:00:00/sensors`
 
 ### Option 2: Mosquitto CLI
 ```bash
 # Subscribe
-mosquitto_sub -h broker.hivemq.com -p 1883 -t "fishfeeder/device/1/#"
+mosquitto_sub -h broker.hivemq.com -p 1883 -t "fishfeeder/device/00:00:00:00:00:00/#"
 
 # Publish test data
-mosquitto_pub -h broker.hivemq.com -p 1883 -t "fishfeeder/device/1/sensors" \
-  -m '{"device_id":1,"temperature":28.5,"humidity":65,"water_level":75,"timestamp":"2024-01-01T12:00:00Z"}'
+mosquitto_pub -h broker.hivemq.com -p 1883 -t "fishfeeder/device/00:00:00:00:00:00/sensors" \
+  -m '{"device_id":"00:00:00:00:00:00","temperature":28.5,"humidity":65,"water_level":75,"timestamp":"2024-01-01T12:00:00Z"}'
 ```
 
 ## File Structure Overview

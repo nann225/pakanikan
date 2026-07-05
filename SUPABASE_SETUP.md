@@ -66,7 +66,7 @@ Di Supabase Dashboard:
 
 ### 1. `device_status` - Status Device
 ```
-device_id (INT, unique)
+device_id (TEXT, unique - MAC address ESP32)
 is_online (BOOLEAN)
 battery_level (INT 0-100)
 motor_status (TEXT: idle/running/error)
@@ -76,7 +76,7 @@ created_at, updated_at
 
 ### 2. `sensor_data` - Data Sensor History
 ```
-device_id (INT)
+device_id (TEXT - MAC address ESP32)
 temperature (NUMERIC)
 humidity (NUMERIC)
 water_level (NUMERIC)
@@ -86,7 +86,7 @@ created_at
 
 ### 3. `feeding_records` - Riwayat Pemberian Pakan
 ```
-device_id (INT)
+device_id (TEXT - MAC address ESP32)
 timestamp (TIMESTAMP)
 duration (INT - dalam detik)
 manual (BOOLEAN - true jika manual)
@@ -97,7 +97,7 @@ created_at, updated_at
 
 ### 4. `device_logs` - Logs Device
 ```
-device_id (INT)
+device_id (TEXT - MAC address ESP32)
 level (TEXT: INFO/WARNING/ERROR/DEBUG)
 message (TEXT)
 timestamp (TIMESTAMP)
@@ -142,7 +142,7 @@ Dashboard akan **otomatis sync** data ke Supabase ketika ada update dari MQTT.
 ### Insert Device Status
 ```sql
 INSERT INTO device_status (device_id, is_online, battery_level, motor_status)
-VALUES (1, true, 85, 'idle')
+VALUES ('00:00:00:00:00:00', true, 85, 'idle')
 ON CONFLICT (device_id) DO UPDATE SET 
   is_online = true,
   battery_level = 85,
@@ -152,13 +152,13 @@ ON CONFLICT (device_id) DO UPDATE SET
 ### Insert Sensor Data
 ```sql
 INSERT INTO sensor_data (device_id, temperature, humidity, water_level, timestamp)
-VALUES (1, 28.5, 65.2, 75, now());
+VALUES ('00:00:00:00:00:00', 28.5, 65.2, 75, now());
 ```
 
 ### Insert Feeding Record
 ```sql
 INSERT INTO feeding_records (device_id, duration, manual, status)
-VALUES (1, 5, true, 'completed');
+VALUES ('00:00:00:00:00:00', 5, true, 'completed');
 ```
 
 ### Get Data dari Dashboard (via API)
@@ -167,7 +167,7 @@ VALUES (1, 5, true, 'completed');
 const { data: sensorData } = await supabase
   .from('sensor_data')
   .select('*')
-  .eq('device_id', 1)
+  .eq('device_id', '00:00:00:00:00:00')
   .order('timestamp', { ascending: false })
   .limit(50);
 ```

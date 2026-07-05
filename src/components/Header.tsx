@@ -5,6 +5,7 @@ import './Header.css'
 export function Header() {
   const mqttConnected = useDashboardStore((state) => state.mqttConnected)
   const deviceStatus = useDashboardStore((state) => state.deviceStatus)
+  const motorStatus = deviceStatus?.motor_status || 'idle'
 
   return (
     <header className="header">
@@ -32,9 +33,9 @@ export function Header() {
 
           <div className="status-item">
             <span className="label">Motor Status</span>
-            <div className={`status-badge ${deviceStatus?.motor_status === 'running' ? 'running' : deviceStatus?.motor_status === 'error' ? 'error' : 'idle'}`}>
-              {deviceStatus?.motor_status === 'running' ? <MdSettings className="spinning" /> : <MdPause />}
-              <span>{deviceStatus?.motor_status}</span>
+            <div className={`status-badge ${motorStatus === 'running' ? 'running' : motorStatus === 'error' ? 'error' : 'idle'}`}>
+              {motorStatus === 'running' ? <MdSettings className="spinning" /> : <MdPause />}
+              <span>{motorStatus}</span>
             </div>
           </div>
         </div>

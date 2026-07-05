@@ -1,121 +1,86 @@
 import { useDashboardStore } from '../store/dashboard'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 import { format } from 'date-fns'
 import './SensorChart.css'
 
-export function SensorChart() {
-  const sensorData = useDashboardStore((state) => state.sensorData)
+type ChartKey = 'temperature' | 'humidity'
 
-  // Format data for recharts
+const chartConfig: Record<ChartKey, { title: string; unit: string; stroke: string; domain: [number | 'auto', number | 'auto'] }> = {
+  temperature: {
+    title: 'Grafik Suhu',
+    unit: 'C',
+    stroke: '#d97706',
+    domain: ['auto', 'auto'],
+  },
+  humidity: {
+    title: 'Grafik Kelembapan',
+    unit: '%',
+    stroke: '#0284c7',
+    domain: [0, 100],
+  },
+}
+
+function SensorLineCard({ chartKey }: { chartKey: ChartKey }) {
+  const sensorData = useDashboardStore((state) => state.sensorData)
+  const config = chartConfig[chartKey]
   const chartData = sensorData
-    .slice()
+    .slice(0, 40)
     .reverse()
     .map((data) => ({
       time: format(new Date(data.timestamp), 'HH:mm:ss'),
-      temperature: data.temperature || 0,
-      humidity: data.humidity || 0,
-      waterLevel: data.water_level || 0,
+      value: chartKey === 'temperature' ? data.temperature || 0 : data.humidity || 0,
     }))
-    .slice(0, 50) // Show last 50 data points
 
   return (
-    <div className="sensor-chart">
+    <div className="sensor-chart-card">
       <div className="chart-header">
-        <h2>Sensor Monitoring</h2>
-        <p className="chart-subtitle">Real-time data visualization</p>
+        <div>
+          <h2>{config.title}</h2>
+          <p className="chart-subtitle">Realtime telemetry</p>
+        </div>
+        <span className="chart-badge">{config.unit}</span>
       </div>
-      
-      {sensorData.length === 0 ? (
-        <p className="no-data">No sensor data available yet. Waiting for MQTT messages...</p>
+
+      {chartData.length === 0 ? (
+        <p className="no-data">Menunggu data sensor dari MQTT...</p>
       ) : (
         <div className="chart-wrapper">
-          <ResponsiveContainer width="100%" height={400}>
-            <LineChart 
-              data={chartData} 
-              margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
-            >
-              <defs>
-                <linearGradient id="colorTemp" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.1}/>
-                  <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
-                </linearGradient>
-                <linearGradient id="colorHumidity" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.1}/>
-                  <stop offset="95%" stopColor="#06b6d4" stopOpacity={0}/>
-                </linearGradient>
-                <linearGradient id="colorWater" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.1}/>
-                  <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <CartesianGrid 
-                strokeDasharray="3 3" 
-                stroke="#e5e7eb"
-                verticalPoints={[]} 
-              />
-              <XAxis 
-                dataKey="time" 
-                tick={{ fill: '#6b7280', fontSize: 12 }}
-                angle={-45}
-                textAnchor="end"
-                height={80}
-                stroke="#e5e7eb"
-              />
-              <YAxis 
-                tick={{ fill: '#6b7280', fontSize: 12 }}
-                stroke="#e5e7eb"
-              />
-              <Tooltip 
+          <ResponsiveContainer width="100%" height={260}>
+            <LineChart data={chartData} margin={{ top: 10, right: 18, left: -18, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" vertical={false} />
+              <XAxis dataKey="time" tick={{ fill: '#64748b', fontSize: 11 }} stroke="#cbd5e1" />
+              <YAxis domain={config.domain} tick={{ fill: '#64748b', fontSize: 11 }} stroke="#cbd5e1" />
+              <Tooltip
+                formatter={(value) => [`${Number(value).toFixed(1)} ${config.unit}`, config.title]}
                 contentStyle={{
                   backgroundColor: '#ffffff',
-                  border: '2px solid #667eea',
-                  borderRadius: '10px',
-                  padding: '12px',
-                  boxShadow: '0 4px 16px rgba(0, 0, 0, 0.1)'
+                  border: '1px solid #cbd5e1',
+                  borderRadius: '8px',
+                  boxShadow: '0 12px 28px rgba(15, 23, 42, 0.12)',
                 }}
-                labelStyle={{ color: '#1f2937', fontWeight: 600 }}
               />
-              <Legend 
-                wrapperStyle={{ paddingTop: '20px' }}
-                iconType="line"
-              />
-              <Line 
-                type="monotone" 
-                dataKey="temperature" 
-                stroke="#f59e0b" 
-                dot={false}
+              <Line
+                type="monotone"
+                dataKey="value"
+                stroke={config.stroke}
                 strokeWidth={3}
-                name="Temperature (°C)"
-                isAnimationActive={false}
-                fillOpacity={1}
-                fill="url(#colorTemp)"
-              />
-              <Line 
-                type="monotone" 
-                dataKey="humidity" 
-                stroke="#06b6d4" 
                 dot={false}
-                strokeWidth={3}
-                name="Humidity (%)"
+                activeDot={{ r: 4 }}
                 isAnimationActive={false}
-                fillOpacity={1}
-                fill="url(#colorHumidity)"
-              />
-              <Line 
-                type="monotone" 
-                dataKey="waterLevel" 
-                stroke="#8b5cf6" 
-                dot={false}
-                strokeWidth={3}
-                name="Water Level"
-                isAnimationActive={false}
-                fillOpacity={1}
-                fill="url(#colorWater)"
               />
             </LineChart>
           </ResponsiveContainer>
         </div>
       )}
+    </div>
+  )
+}
+
+export function SensorChart() {
+  return (
+    <div className="sensor-chart-grid">
+      <SensorLineCard chartKey="temperature" />
+      <SensorLineCard chartKey="humidity" />
     </div>
   )
 }

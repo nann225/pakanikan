@@ -77,7 +77,7 @@ VITE_MQTT_USERNAME=       # Kosongkan jika public broker
 VITE_MQTT_PASSWORD=       # Kosongkan jika public broker
 
 # Device Configuration
-VITE_DEVICE_ID=1
+VITE_DEVICE_ID=00:00:00:00:00:00
 VITE_API_BASE_URL=http://localhost/fishfeeder/api
 ```
 
@@ -90,7 +90,7 @@ VITE_API_BASE_URL=http://localhost/fishfeeder/api
 ```sql
 CREATE TABLE device_status (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  device_id INT NOT NULL,
+  device_id TEXT NOT NULL,
   is_online BOOLEAN DEFAULT false,
   battery_level INT,
   motor_status TEXT CHECK (motor_status IN ('idle', 'running', 'error')),
@@ -104,7 +104,7 @@ CREATE TABLE device_status (
 ```sql
 CREATE TABLE sensor_data (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  device_id INT NOT NULL,
+  device_id TEXT NOT NULL,
   temperature NUMERIC,
   humidity NUMERIC,
   water_level NUMERIC,
@@ -117,7 +117,7 @@ CREATE TABLE sensor_data (
 ```sql
 CREATE TABLE feeding_records (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  device_id INT NOT NULL,
+  device_id TEXT NOT NULL,
   timestamp TIMESTAMP WITH TIME ZONE DEFAULT now(),
   duration INT NOT NULL,
   manual BOOLEAN DEFAULT true,
@@ -139,8 +139,8 @@ HiveMQ Public Broker sudah siap digunakan tanpa konfigurasi tambahan:
 ```
 fishfeeder/device/{device_id}/status      → Device status updates
 fishfeeder/device/{device_id}/sensors     → Sensor data
-fishfeeder/device/{device_id}/feeding     → Feeding commands & history
-fishfeeder/device/{device_id}/feed        → Manual feed trigger
+fishfeeder/device/{device_id}/feeding     -> Feeding history
+fishfeeder/device/{device_id}/command     -> Manual feed commands
 ```
 
 ## Menjalankan Dashboard

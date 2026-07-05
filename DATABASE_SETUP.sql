@@ -9,7 +9,7 @@
 -- =====================================================
 CREATE TABLE IF NOT EXISTS device_status (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  device_id INT NOT NULL UNIQUE,
+  device_id TEXT NOT NULL UNIQUE,
   is_online BOOLEAN DEFAULT false,
   battery_level INT CHECK (battery_level >= 0 AND battery_level <= 100),
   motor_status TEXT CHECK (motor_status IN ('idle', 'running', 'error')) DEFAULT 'idle',
@@ -28,7 +28,7 @@ CREATE INDEX IF NOT EXISTS idx_device_status_last_seen ON device_status(last_see
 -- =====================================================
 CREATE TABLE IF NOT EXISTS sensor_data (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  device_id INT NOT NULL,
+  device_id TEXT NOT NULL,
   temperature NUMERIC(5,2),
   humidity NUMERIC(5,2),
   water_level NUMERIC(5,2),
@@ -52,7 +52,7 @@ CREATE INDEX IF NOT EXISTS idx_sensor_data_device_timestamp ON sensor_data(devic
 -- =====================================================
 CREATE TABLE IF NOT EXISTS feeding_records (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  device_id INT NOT NULL,
+  device_id TEXT NOT NULL,
   timestamp TIMESTAMP WITH TIME ZONE DEFAULT now(),
   duration INT NOT NULL CHECK (duration > 0 AND duration <= 3600),
   manual BOOLEAN DEFAULT true,
@@ -75,7 +75,7 @@ CREATE INDEX IF NOT EXISTS idx_feeding_records_device_timestamp ON feeding_recor
 -- =====================================================
 CREATE TABLE IF NOT EXISTS device_logs (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  device_id INT NOT NULL,
+  device_id TEXT NOT NULL,
   level TEXT CHECK (level IN ('INFO', 'WARNING', 'ERROR', 'DEBUG')) DEFAULT 'INFO',
   message TEXT NOT NULL,
   timestamp TIMESTAMP WITH TIME ZONE DEFAULT now(),
@@ -142,7 +142,7 @@ CREATE POLICY "Allow public read on device_logs"
 
 -- Insert sample device status
 INSERT INTO device_status (device_id, is_online, battery_level, motor_status, last_seen)
-VALUES (1, true, 85, 'idle', now())
+VALUES ('00:00:00:00:00:00', true, 85, 'idle', now())
 ON CONFLICT (device_id) DO UPDATE SET 
   is_online = true,
   battery_level = 85,
@@ -185,13 +185,13 @@ ORDER BY device_id, timestamp DESC;
 -- =====================================================
 
 -- Get device status
--- SELECT * FROM device_status WHERE device_id = 1;
+-- SELECT * FROM device_status WHERE device_id = '00:00:00:00:00:00';
 
 -- Get latest sensor data (last 50 readings)
--- SELECT * FROM sensor_data WHERE device_id = 1 ORDER BY timestamp DESC LIMIT 50;
+-- SELECT * FROM sensor_data WHERE device_id = '00:00:00:00:00:00' ORDER BY timestamp DESC LIMIT 50;
 
 -- Get feeding history for today
--- SELECT * FROM feeding_records WHERE device_id = 1 AND DATE(timestamp) = CURRENT_DATE ORDER BY timestamp DESC;
+-- SELECT * FROM feeding_records WHERE device_id = '00:00:00:00:00:00' AND DATE(timestamp) = CURRENT_DATE ORDER BY timestamp DESC;
 
 -- Get device health summary
 -- SELECT 
