@@ -76,10 +76,10 @@ export function DeviceStatus() {
             <h3>Last Seen</h3>
           </div>
           <div className="card-value">
-            {format(new Date(deviceStatus.last_seen), 'HH:mm:ss')}
+            {format(new Date(deviceStatus.last_seen || new Date()), 'HH:mm:ss')}
           </div>
           <p className="card-detail">
-            {format(new Date(deviceStatus.last_seen), 'MMM dd, yyyy')}
+            {format(new Date(deviceStatus.last_seen || new Date()), 'MMM dd, yyyy')}
           </p>
         </div>
 

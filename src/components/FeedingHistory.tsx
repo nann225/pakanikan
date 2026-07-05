@@ -30,7 +30,7 @@ export function FeedingHistory() {
           {feedingHistory.map((record, index) => (
             <div key={index} className={`history-item status-${record.status}`}>
               <div className="item-status">
-                {getStatusIcon(record.status)}
+                {getStatusIcon(record.status || 'completed')}
               </div>
               
               <div className="item-info">

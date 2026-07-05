@@ -12,21 +12,24 @@ export const supabase = createClient(supabaseUrl || '', supabaseKey || '')
 // Types for Supabase database
 export interface FeedingRecord {
   id?: string
-  device_id: number
+  device_id: number | string
   timestamp: string
   duration: number
-  manual: boolean
-  status: 'pending' | 'completed' | 'failed'
+  type?: 'manual' | 'scheduled'
+  manual?: boolean
+  status?: 'pending' | 'completed' | 'failed'
   created_at?: string
   updated_at?: string
 }
 
 export interface DeviceStatus {
   id?: string
-  device_id: number
-  is_online: boolean
+  device_id: number | string
+  status?: string
+  is_online?: boolean
   battery_level?: number
-  last_seen: string
+  signal_strength?: number
+  last_seen?: string
   motor_status: 'idle' | 'running' | 'error'
   created_at?: string
   updated_at?: string
@@ -34,7 +37,7 @@ export interface DeviceStatus {
 
 export interface SensorData {
   id?: string
-  device_id: number
+  device_id: number | string
   temperature?: number
   humidity?: number
   water_level?: number

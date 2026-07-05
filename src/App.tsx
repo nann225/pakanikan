@@ -9,6 +9,78 @@ import { mqttManager } from './lib/mqtt'
 import { supabase, FeedingRecord, DeviceStatus as IDeviceStatus, SensorData } from './lib/supabase'
 import './App.css'
 
+// Helper function to save device status to Supabase
+async function saveDeviceStatus(status: IDeviceStatus) {
+  try {
+    // Check if device exists
+    const { data: existing } = await supabase
+      .from('device_status')
+      .select('id')
+      .eq('device_id', status.device_id)
+      .single()
+
+    if (existing) {
+      // Update existing record
+      await supabase
+        .from('device_status')
+        .update({
+          motor_status: status.motor_status,
+          battery_level: status.battery_level,
+          last_seen: new Date().toISOString(),
+          is_online: status.status === 'online',
+        })
+        .eq('device_id', status.device_id)
+    } else {
+      // Create new record
+      await supabase
+        .from('device_status')
+        .insert({
+          device_id: parseInt(status.device_id as unknown as string),
+          motor_status: status.motor_status,
+          battery_level: status.battery_level,
+          last_seen: new Date().toISOString(),
+          is_online: status.status === 'online',
+        })
+    }
+  } catch (error) {
+    console.error('Error saving device status:', error)
+  }
+}
+
+// Helper function to save sensor data to Supabase
+async function saveSensorData(data: SensorData) {
+  try {
+    await supabase
+      .from('sensor_data')
+      .insert({
+        device_id: parseInt(data.device_id as unknown as string),
+        temperature: data.temperature,
+        humidity: data.humidity,
+        water_level: data.water_level,
+        timestamp: data.timestamp || new Date().toISOString(),
+      })
+  } catch (error) {
+    console.error('Error saving sensor data:', error)
+  }
+}
+
+// Helper function to save feeding record to Supabase
+async function saveFeedingRecord(record: FeedingRecord) {
+  try {
+    await supabase
+      .from('feeding_records')
+      .insert({
+        device_id: parseInt(record.device_id as unknown as string),
+        duration: record.duration,
+        manual: record.type === 'manual',
+        status: 'completed',
+        timestamp: record.timestamp || new Date().toISOString(),
+      })
+  } catch (error) {
+    console.error('Error saving feeding record:', error)
+  }
+}
+
 function App() {
   const {
     setMQTTConnected,
@@ -37,6 +109,7 @@ function App() {
           try {
             const status = JSON.parse(payload) as IDeviceStatus
             setDeviceStatus(status)
+            saveDeviceStatus(status)  // Save to Supabase
           } catch (error) {
             console.error('Failed to parse device status:', error)
           }
@@ -47,6 +120,7 @@ function App() {
           try {
             const data = JSON.parse(payload) as SensorData
             addSensorData(data)
+            saveSensorData(data)  // Save to Supabase
           } catch (error) {
             console.error('Failed to parse sensor data:', error)
           }
@@ -57,6 +131,7 @@ function App() {
           try {
             const record = JSON.parse(payload) as FeedingRecord
             addFeedingRecord(record)
+            saveFeedingRecord(record)  // Save to Supabase
           } catch (error) {
             console.error('Failed to parse feeding record:', error)
           }
