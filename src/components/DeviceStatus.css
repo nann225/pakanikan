@@ -1,0 +1,254 @@
+.device-status {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  margin: 20px 0;
+  border: 1px solid #e5e7eb;
+}
+
+.device-status h2 {
+  margin: 0 0 25px 0;
+  color: #1f2937;
+  font-size: 1.5em;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.device-status .no-data {
+  text-align: center;
+  color: #9ca3af;
+  padding: 50px 20px;
+  font-size: 1em;
+  background: #f9fafb;
+  border-radius: 12px;
+  border: 2px dashed #e5e7eb;
+  margin: 20px 0;
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 18px;
+}
+
+.status-card {
+  background: linear-gradient(135deg, #f9fafb 0%, #ffffff 100%);
+  border-radius: 12px;
+  padding: 20px;
+  border: 1.5px solid #e5e7eb;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.status-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.status-card:hover {
+  border-color: #d1d5db;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
+}
+
+.status-card:hover::before {
+  transform: scaleX(1);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.card-icon {
+  font-size: 1.8em;
+  color: #667eea;
+  flex-shrink: 0;
+}
+
+.battery-icon {
+  font-size: 1.8em;
+  flex-shrink: 0;
+  transition: color 0.3s ease;
+}
+
+.battery-icon.high {
+  color: #10b981;
+}
+
+.battery-icon.medium {
+  color: #f59e0b;
+}
+
+.battery-icon.low {
+  color: #ef4444;
+}
+
+.battery-icon.critical {
+  color: #dc2626;
+  animation: alert-pulse 1s infinite;
+}
+
+@keyframes alert-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.motor-icon {
+  font-size: 1.8em;
+  flex-shrink: 0;
+}
+
+.motor-icon.spinning {
+  color: #3b82f6;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.motor-icon.error {
+  color: #ef4444;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 0.9em;
+  color: #6b7280;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.card-value {
+  font-size: 2em;
+  font-weight: 800;
+  color: #1f2937;
+  margin: 12px 0 8px 0;
+  letter-spacing: -0.5px;
+}
+
+.card-value.online {
+  color: #10b981;
+}
+
+.card-value.offline {
+  color: #ef4444;
+}
+
+.card-value.motor-status-running {
+  color: #3b82f6;
+  text-transform: capitalize;
+}
+
+.card-value.motor-status-idle {
+  color: #6b7280;
+  text-transform: capitalize;
+}
+
+.card-value.motor-status-error {
+  color: #ef4444;
+  text-transform: capitalize;
+}
+
+.card-detail {
+  color: #9ca3af;
+  font-size: 0.85em;
+  margin: 6px 0 0 0;
+  font-weight: 500;
+}
+
+.battery-bar {
+  width: 100%;
+  height: 6px;
+  background: #e5e7eb;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 12px;
+}
+
+.battery-fill {
+  height: 100%;
+  transition: width 0.5s ease, background-color 0.3s ease;
+  border-radius: 3px;
+  background: linear-gradient(90deg, #667eea, #764ba2);
+}
+
+.battery-fill.high {
+  background: linear-gradient(90deg, #10b981, #059669);
+}
+
+.battery-fill.medium {
+  background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.battery-fill.low {
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+@media (max-width: 1024px) {
+  .status-grid {
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 15px;
+  }
+}
+
+@media (max-width: 768px) {
+  .device-status {
+    padding: 20px;
+  }
+
+  .device-status h2 {
+    font-size: 1.2em;
+    margin-bottom: 18px;
+  }
+
+  .status-grid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+  }
+
+  .status-card {
+    padding: 15px;
+    border-radius: 10px;
+  }
+
+  .card-header {
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .card-icon {
+    font-size: 1.5em;
+  }
+
+  .card-value {
+    font-size: 1.6em;
+  }
+
+  .card-detail {
+    font-size: 0.8em;
+  }
+}
