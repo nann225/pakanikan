@@ -1,5 +1,5 @@
 import { useDashboardStore } from '../store/dashboard'
-import { MdSignalCellularAlt, MdAccessTime, MdBattery80, MdBattery60, MdBattery30, MdBatteryAlert, MdGear, MdError, MdPause } from 'react-icons/md'
+import { MdSignalCellularAlt, MdAccessTime, MdBattery80, MdBattery60, MdBattery30, MdBatteryAlert, MdSettings, MdError, MdPause } from 'react-icons/md'
 import { format } from 'date-fns'
 import './DeviceStatus.css'
 
@@ -17,7 +17,7 @@ export function DeviceStatus() {
   const getMotorIcon = (status?: string) => {
     switch (status) {
       case 'running':
-        return <MdGear className="motor-icon spinning" />
+        return <MdSettings className="motor-icon spinning" />
       case 'error':
         return <MdError className="motor-icon error" />
       default:

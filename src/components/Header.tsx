@@ -1,5 +1,5 @@
 import { useDashboardStore } from '../store/dashboard'
-import { MdSignalCellularAlt, MdSignalCellularNoSim, MdCircle, MdGear, MdPause } from 'react-icons/md'
+import { MdSignalCellularAlt, MdSignalCellularNoSim, MdCircle, MdSettings, MdPause } from 'react-icons/md'
 import './Header.css'
 
 export function Header() {
@@ -33,7 +33,7 @@ export function Header() {
           <div className="status-item">
             <span className="label">Motor Status</span>
             <div className={`status-badge ${deviceStatus?.motor_status === 'running' ? 'running' : deviceStatus?.motor_status === 'error' ? 'error' : 'idle'}`}>
-              {deviceStatus?.motor_status === 'running' ? <MdGear className="spinning" /> : <MdPause />}
+              {deviceStatus?.motor_status === 'running' ? <MdSettings className="spinning" /> : <MdPause />}
               <span>{deviceStatus?.motor_status}</span>
             </div>
           </div>
